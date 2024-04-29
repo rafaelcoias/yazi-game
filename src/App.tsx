@@ -1,24 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import User from './components/User';
+import PlayerSetup from './components/PlayerSetup';
+import DiceGame from './components/Game';
 
 function App() {
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+
+  const startGame = (players: User[]) => {
+    setUsers(players);
+    setGameStarted(true);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='w-full flex justify-center min-h-screen h-full bg-[#76b34c] p-2'>
+      {!gameStarted ? (
+        <PlayerSetup onStartGame={startGame} />
+      ) : (
+        <DiceGame users={users} setUsers={setUsers} />
+      )}
     </div>
   );
 }
