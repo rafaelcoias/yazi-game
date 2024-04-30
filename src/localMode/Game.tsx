@@ -2,54 +2,29 @@ import React, { useEffect, useState } from 'react';
 import ScoreTable from './ScoreTable';
 import User from './User';
 import BigDice from './BigDice';
-import { useSocket } from '../SocketContext';
 
 interface Dice {
   value: number;
   isHeld: boolean;
 }
 
-// const socket = io('http://localhost:3000');
-
 const initialDice: Dice[] = Array(5).fill({ value: 1, isHeld: false });
 
 function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
-  const socket = useSocket();
-  // const [gameState, setGameState] = useState(null);
 
   const [dice, setDice] = useState<Dice[]>(initialDice);
   const [rollCount, setRollCount] = useState<number>(0);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
   const [hasRolled, setHasRolled] = useState<boolean>(false);
   const [currentPlayer, setCurrentPlayer] = useState<User>(users[0]);
-
-  useEffect(() => {
-    if (socket) {
-      socket.connect();
-
-      socket.on('gameStateUpdate', (state:any) => {
-        // setGameState(state);
-        setDice(state.dice);
-        setRollCount(state.rollCount);
-        setCurrentPlayerIndex(state.currentPlayerIndex);
-      });
-
-      socket.on('error', (errorMessage:string) => {
-        alert(errorMessage);
-      });
-
-      return () => {
-        socket.off('gameStateUpdate');
-        socket.off('error');
-      };
-    }
-  }, [socket]);
+  const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const [winner, setWinner] = useState<any>();
 
   useEffect(() => {
     setCurrentPlayer(users?.[currentPlayerIndex]);
+    document.body.style.backgroundColor = users?.[currentPlayerIndex]?.color; 
   }, [currentPlayerIndex, users]);
 
-  // Function to handle score updating
   const handleScoreUpdate = (userId: number, lineId: number, score: number) => {
     if (!hasRolled) {
       alert("You need to roll the dice first!");
@@ -73,8 +48,26 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
     newUsers[userId].updateScore(lineId, lineScore);
     setUsers(newUsers);
 
+    if (checkGameCompletion(users)) {
+      document.body.style.backgroundColor = '';
+      const winner = determineWinner(users);
+      setWinner({
+        username: winner.username,
+        totalPoints: winner.totalPoints,
+      });
+      setGameEnded(true);
+    }
+
     endTurn();
   };
+
+  function checkGameCompletion(users: any) {
+    return users.every((user: any) => user?.scores?.every((score: number) => score !== -1));
+  }
+
+  function determineWinner(users: any) {
+    return users.reduce((prev: any, current: any) => (prev.totalPoints > current.totalPoints) ? prev : current);
+  }
 
   const calculateScore = (lineId: number, diceValues: number[]): number => {
     switch (lineId) {
@@ -151,15 +144,21 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
   };
 
   const endTurn = () => {
+    setCurrentPlayerIndex((prev: number) => (prev + 1) % users.length);
     setDice(initialDice.map(d => ({ ...d, isHeld: false })));
     setRollCount(0);
     setHasRolled(false);
-    setCurrentPlayerIndex((prev: number) => (prev + 1) % users.length);
+    document.body.style.backgroundColor = users?.[currentPlayerIndex]?.color; 
   };
 
   return (
     <div className="w-[20rem] flex flex-col items-center justify-center">
-      <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
+      {
+        gameEnded ?
+          <h1 className='mb-4 text-white'>The winner is {winner.username} with {winner.totalPoints} points!</h1>
+          :
+          <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
+      }
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
         <ScoreTable users={users} onScore={handleScoreUpdate} diceValues={dice.map(d => d.value)} currentPlayerIndex={currentPlayerIndex} calculateScore={calculateScore} hasRolled={hasRolled} />
         <div className="flex gap-1 justify-evenly">
@@ -175,13 +174,23 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
             </div>
           ))}
         </div>
-        <button
-          className="w-full p-2 mb-4 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700"
-          onClick={rollDice}
-          disabled={rollCount >= 3}
-        >
-          Roll Dice ({3 - rollCount})
-        </button>
+        {
+          !gameEnded ?
+            <button
+              className="w-full p-2 mb-4 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700"
+              onClick={rollDice}
+              disabled={rollCount >= 3}
+            >
+              Roll Dice ({3 - rollCount})
+            </button>
+            :
+            <button
+              className="w-full p-2 mb-4 text-white transition-all duration-200 bg-yellow-500 rounded hover:bg-yellow-700"
+              onClick={() => window.location.reload()}
+            >
+              Go back to waiting room
+            </button>
+        }
       </div>
     </div>
   );

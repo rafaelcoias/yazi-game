@@ -14,7 +14,7 @@ function LocalGame() {
   };
 
   return (
-    <div className='w-full flex justify-center min-h-screen h-full bg-[#76b34c] p-2'>
+    <div className='flex justify-center w-full h-full min-h-screen p-2'>
       {!gameStarted ? (
         <PlayerSetup onStartGame={startGame} />
       ) : (

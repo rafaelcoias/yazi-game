@@ -6,7 +6,7 @@ interface PlayerSetupProps {
 }
 
 const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
-  const [usernames, setUsernames] = useState<string[]>(["", ""]);  // Start with two empty slots for usernames
+  const [usernames, setUsernames] = useState<string[]>(["", ""]);
 
   const handleChange = (index: number, value: string) => {
     const updatedUsernames = usernames.map((username, i) => {
@@ -18,7 +18,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const users = usernames.filter(name => name.trim() !== "").map(name => new User(name.trim()));
+    const users = usernames.filter(name => name.trim() !== "").map((name, index) => new User(index, name.trim()));
     if (users.length >= 2 && users.length <= 4) {
       onStartGame(users);
     } else {
@@ -53,17 +53,17 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
               placeholder={`Player ${index + 1} Name`}
               value={username}
               onChange={(e) => handleChange(index, e.target.value)}
-              className="mr-2 p-1 border rounded"
+              className="p-1 mr-2 border rounded"
             />
-            <button type="button" onClick={() => removeUser(index)} className="px-3 py-1 bg-red-500 hover:bg-red-700 transition-all duration-200 text-white rounded">Remove</button>
+            <button type="button" onClick={() => removeUser(index)} className="px-3 py-1 text-white transition-all duration-200 bg-red-500 rounded hover:bg-red-700">Remove</button>
           </div>
         ))}
       </div>
-      <div className='flex gap-4 justify-center items-center w-full'>
-        <button type="button" onClick={addUser} className=" px-4 py-2 bg-blue-500 hover:bg-blue-700 transition-all duration-200 text-white rounded">
+      <div className='flex items-center justify-center w-full gap-4'>
+        <button type="button" onClick={addUser} className="px-4 py-2 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700">
           Add Player
         </button>
-        <button type="submit" className="px-4 py-2 bg-blue-500 hover:bg-blue-700 transition-all duration-200 text-white rounded">
+        <button type="submit" className="px-4 py-2 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700">
           Start Game
         </button>
       </div>
