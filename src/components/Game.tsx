@@ -9,72 +9,70 @@ interface Dice {
   isHeld: boolean;
 }
 
-// const socket = io('http://localhost:3000');
-
 const initialDice: Dice[] = Array(5).fill({ value: 1, isHeld: false });
 
-function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
-  const socket = useSocket();
-  // const [gameState, setGameState] = useState(null);
+interface Props {
+  users: User[];
+  setUsers: any;
+  userId: string | null;
+  setUserId: any;
+}
 
+
+const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
   const [dice, setDice] = useState<Dice[]>(initialDice);
   const [rollCount, setRollCount] = useState<number>(0);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
-  const [hasRolled, setHasRolled] = useState<boolean>(false);
-  const [currentPlayer, setCurrentPlayer] = useState<User>(users[0]);
+  const [currentPlayer, setCurrentPlayer] = useState<User | undefined>(users[0]);
+  const socket = useSocket();
 
   useEffect(() => {
-    if (socket) {
-      socket.connect();
 
-      socket.on('gameStateUpdate', (state:any) => {
-        // setGameState(state);
-        setDice(state.dice);
-        setRollCount(state.rollCount);
-        setCurrentPlayerIndex(state.currentPlayerIndex);
-      });
-
-      socket.on('error', (errorMessage:string) => {
-        alert(errorMessage);
-      });
-
-      return () => {
-        socket.off('gameStateUpdate');
-        socket.off('error');
-      };
+    // Ensure userID is correctly loaded and managed
+    const storedId = localStorage.getItem('userId');
+    if (storedId) {
+      setUserId(storedId);
     }
-  }, [socket]);
+
+    function checkGameCompletion(users:any) {
+      return users.every((user:any) => user.scores.every((score:number) => score !== -1));
+    }
+
+    function determineWinner(users:any) {
+      return users.reduce((prev:any, current:any) => (prev.totalPoints > current.totalPoints) ? prev : current);
+    }
+        
+    socket?.on('gameStateUpdate', (gameState: any) => {
+      setDice(gameState.dice);
+      setRollCount(gameState.rollCount);
+      setCurrentPlayerIndex(gameState.currentPlayerIndex);
+      setUsers(gameState.users);
+
+      if (checkGameCompletion(gameState.users)) {
+        const winner = determineWinner(gameState.users);
+        alert(`The winner is ${winner.username} with ${winner.totalPoints} points!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    });
+
+    socket?.on('error', (errorMessage: string) => {
+      alert(errorMessage);
+    });
+
+    return () => {
+      socket?.off('gameStateUpdate');
+      socket?.off('error');
+    };
+  }, [socket, setUsers, currentPlayerIndex, setUserId]);
 
   useEffect(() => {
-    setCurrentPlayer(users?.[currentPlayerIndex]);
+    if (currentPlayerIndex < users.length) {
+      setCurrentPlayer(users[currentPlayerIndex]);
+    }
   }, [currentPlayerIndex, users]);
 
-  // Function to handle score updating
-  const handleScoreUpdate = (userId: number, lineId: number, score: number) => {
-    if (!hasRolled) {
-      alert("You need to roll the dice first!");
-      return;
-    }
-
-    if (userId !== currentPlayerIndex) {
-      alert("It's not your turn!");
-      return;
-    }
-
-    if (currentPlayer && currentPlayer.scores[lineId] !== -1) {
-      alert("This line has already been scored. Please choose another.");
-      return;
-    }
-
-    const diceValues = dice.map(d => d.value);
-    const lineScore = calculateScore(lineId, diceValues);
-
-    const newUsers = [...users];
-    newUsers[userId].updateScore(lineId, lineScore);
-    setUsers(newUsers);
-
-    endTurn();
-  };
 
   const calculateScore = (lineId: number, diceValues: number[]): number => {
     switch (lineId) {
@@ -130,39 +128,86 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
     return diceValues.reduce((sum, value) => sum + value, 0);
   };
 
+  const optimisticScoreUpdate = (userId: number, lineId: number, score: number) => {
+    setUsers((prevUsers: any) => prevUsers.map((user: any) => {
+      if (user.id === userId) {
+        const updatedScores = [...user.scores];
+        updatedScores[lineId] = score;
+        return { ...user, scores: updatedScores };
+      }
+      return user;
+    }));
+  };
+
+
+
+  const handleScoreUpdate = (userId: number, lineId: number) => {
+    if (rollCount === 0) {
+      alert("You need to roll the dice first!");
+      return;
+    }
+
+    if (userId !== currentPlayerIndex) {
+      alert("It's not your turn!");
+      return;
+    }
+
+    const scoreValue = calculateScore(lineId, dice.map(d => d.value));
+
+    if (scoreValue !== null) {
+      optimisticScoreUpdate(userId, lineId, scoreValue);
+      socket?.emit('scoreUpdate', { userId, lineId, score: scoreValue }, (response: any) => {
+        if (!response.success) {
+          console.error('Failed to update score on server');
+        }
+      });
+    } else {
+      alert('Invalid score calculation');
+    }
+  };
+
+
+  const toggleHoldDice = (index: number) => {
+    if (rollCount === 0) {
+      alert("You need to roll the dice first!");
+      return;
+    }
+
+    if (userId !== users[currentPlayerIndex]?.id) {
+      alert("It's not your turn!");
+      return;
+    }
+
+    socket?.emit('holdDice', index);
+  };
+
   const rollDice = () => {
+    if (userId !== currentPlayer?.id) {
+      alert("It's not your turn!");
+      return;
+    }
+
     if (rollCount < 3) {
-      setDice(dice.map(dice => dice.isHeld ? dice : { ...dice, value: Math.ceil(Math.random() * 6) }));
-      setRollCount(rollCount + 1);
-      setHasRolled(true);
+      socket?.emit('rollDice');
     } else {
       alert('No more rolls left, please choose a score slot.');
     }
   };
 
-  const toggleHoldDice = (index: number) => {
-    if (!hasRolled) {
-      alert("You need to roll the dice first!");
-      return;
-    }
-    const newDice = [...dice];
-    newDice[index].isHeld = !newDice[index].isHeld;
-    setDice(newDice);
-  };
-
-  const endTurn = () => {
-    setDice(initialDice.map(d => ({ ...d, isHeld: false })));
-    setRollCount(0);
-    setHasRolled(false);
-    setCurrentPlayerIndex((prev: number) => (prev + 1) % users.length);
-  };
 
   return (
-    <div className="w-[20rem] flex flex-col items-center justify-center">
-      <h1 className='text-white mb-4'>Playing: {currentPlayer?.username}</h1>
+    <div className="flex flex-col items-center justify-center w-full my-4">
+      <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
-        <ScoreTable users={users} onScore={handleScoreUpdate} diceValues={dice.map(d => d.value)} currentPlayerIndex={currentPlayerIndex} calculateScore={calculateScore} hasRolled={hasRolled} />
-        <div className="flex justify-evenly gap-1">
+        <ScoreTable
+          users={users}
+          onScore={handleScoreUpdate}
+          diceValues={dice.map(d => d.value)}
+          currentPlayerIndex={currentPlayerIndex}
+          calculateScore={calculateScore}
+          hasRolled={rollCount !== 0}
+        />
+        <div className="flex gap-1 justify-evenly">
           {dice.map((dice, index) => (
             <div key={index}
               onClick={() => toggleHoldDice(index)}
@@ -176,7 +221,7 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
           ))}
         </div>
         <button
-          className="w-full mb-4 bg-blue-500 hover:bg-blue-700 transition-all duration-200 text-white p-2 rounded"
+          className="w-full p-2 mb-4 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700"
           onClick={rollDice}
           disabled={rollCount >= 3}
         >

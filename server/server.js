@@ -17,18 +17,37 @@ function rollDice() {
   return gameState.dice.map(die => die.isHeld ? die : { ...die, value: Math.ceil(Math.random() * 6) });
 }
 
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
-  socket.on('joinGame', (username) => {
-    if (!username || gameState.users.some(user => user.username === username)) {
-      socket.emit('error', 'Username is required or already in use');
-      return;
-    }
-    const user = { id: socket.id, username, scores: Array(11).fill(-1), totalPoints: 0 };
-    gameState.users.push(user);
+  socket.emit('gameStateUpdate', gameState);
+
+  socket.on('joinGame', (username, callback) => {
+    const id = socket.id;
+    const newUser = {
+      id: id,
+      username: username,
+      scores: Array(11).fill(-1)
+    };
+  
+    gameState.users.push(newUser);
     io.emit('gameStateUpdate', gameState);
-    console.log(`User ${username} joined the game`);
+    callback({ id: id });
+  }); 
+
+  socket.on('startGame', () => {
+    if (gameState.users.length >= 2) {
+      gameState.currentPlayerIndex = 0; // Ensure this is correctly set
+      gameState.rollCount = 0; // Reset roll count
+      io.emit('gameStarted', gameState); // Notify all clients that the game has started
+      console.log('Game started with players:', gameState.users.map(user => user.username));
+    } else {
+      socket.emit('error', 'Not enough players to start the game');
+    }
   });
 
   socket.on('rollDice', () => {
@@ -51,17 +70,38 @@ io.on('connection', (socket) => {
   });
 
   socket.on('scoreUpdate', ({ userId, lineId, score }) => {
-    let user = gameState.users.find(user => user.id === userId);
-    if (user && lineId >= 0 && lineId < user.scores.length && user.scores[lineId] === -1) {
-      user.scores[lineId] = score;
-      user.totalPoints += score;
-      gameState.rollCount = 0;
-      gameState.dice = Array(5).fill({ value: 1, isHeld: false });
-      gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.users.length;
-      io.emit('gameStateUpdate', gameState);
-    } else {
-      socket.emit('error', 'Invalid score update');
+    if (userId !== gameState.currentPlayerIndex) {
+      socket.emit('error', 'It\'s not your turn!');
+      return;
     }
+  
+    let user = gameState.users[userId];
+    if (!user) {
+      socket.emit('error', 'User not found');
+      return;
+    }
+  
+    if (gameState.rollCount === 0) {
+      socket.emit('error', 'Please roll the dice first');
+      return;
+    }
+  
+    if (lineId < 0 || lineId >= user.scores.length) {
+      socket.emit('error', 'Invalid score line selected');
+      return;
+    }
+  
+    if (user.scores[lineId] !== -1) {
+      socket.emit('error', 'Score already set for this line');
+      return;
+    }
+  
+    user.scores[lineId] = score;
+    user.totalPoints += score;
+    gameState.rollCount = 0; 
+    gameState.dice = Array(5).fill({ value: 1, isHeld: false });
+    gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.users.length;
+    io.emit('gameStateUpdate', gameState);
   });
 
   socket.on('disconnect', () => {

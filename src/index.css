@@ -17,6 +17,10 @@ body {
   font-family: garetBold, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #76b34c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 code {
