@@ -58,7 +58,7 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
         });
         setTimeout(() => {
           setGameEnded(true);
-        }, 2000);
+        }, 100);
       }
     });
 
