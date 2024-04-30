@@ -12,7 +12,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     useEffect(() => {
         // TODO: Change the URL to your server's URL
-        const newSocket = io('https://yazi-261b234dbfb9.herokuapp.com:3001', {
+        const newSocket = io('https://yazi-261b234dbfb9.herokuapp.com/', {
             transports: ['websocket'],
         });
         setSocket(newSocket);
