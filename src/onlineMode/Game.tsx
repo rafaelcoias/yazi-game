@@ -44,21 +44,23 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
       return users.reduce((prev: any, current: any) => (prev.totalPoints > current.totalPoints) ? prev : current);
     }
 
-    socket?.on('gameStateUpdate', (gameState: any) => {
+    socket?.on('gameStateUpdate', (gameState) => {
       setDice(gameState.dice);
       setRollCount(gameState.rollCount);
       setCurrentPlayerIndex(gameState.currentPlayerIndex);
       setUsers(gameState.users);
+      const currentPlayer = gameState.users[gameState.currentPlayerIndex];
+      setCurrentPlayer(currentPlayer);
+      document.body.style.backgroundColor = gameState.users[gameState.currentPlayerIndex].color;
 
       if (checkGameCompletion(gameState.users)) {
+        document.body.style.backgroundColor = '';
         const winner = determineWinner(gameState.users);
         setWinner({
           username: winner.username,
-          totalPoints: winner.totalPoints
+          totalPoints: winner.totalPoints,
         });
-        setTimeout(() => {
-          setGameEnded(true);
-        }, 100);
+        setGameEnded(true);
       }
     });
 
@@ -67,6 +69,7 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
     });
 
     return () => {
+      document.body.style.backgroundColor = '';
       socket?.off('gameStateUpdate');
       socket?.off('error');
     };
@@ -74,9 +77,14 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
 
   useEffect(() => {
     if (currentPlayerIndex < users.length) {
-      setCurrentPlayer(users[currentPlayerIndex]);
+      const currentPlayer = users[currentPlayerIndex];
+      setCurrentPlayer(currentPlayer);
+      if (currentPlayer) {
+        document.body.style.backgroundColor = currentPlayer.color;
+      }
     }
   }, [currentPlayerIndex, users]);
+
 
 
   const calculateScore = (lineId: number, diceValues: number[]): number => {
@@ -204,9 +212,9 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
     <div className="flex flex-col items-center justify-center w-full my-4">
       {
         gameEnded ?
-        <h1 className='mb-4 text-white'>The winner is {winner.username} with {winner.totalPoints} points!</h1>
-        :
-        <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
+          <h1 className='mb-4 text-white'>The winner is {winner.username} with {winner.totalPoints} points!</h1>
+          :
+          <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
       }
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
         <ScoreTable

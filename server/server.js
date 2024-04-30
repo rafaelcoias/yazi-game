@@ -10,11 +10,18 @@ let gameState = {
   users: [],
   dice: Array(5).fill({ value: 1, isHeld: false }),
   currentPlayerIndex: 0,
-  rollCount: 0
+  rollCount: 0,
+  messages: [] 
 };
+
 
 function rollDice() {
   return gameState.dice.map(die => die.isHeld ? die : { ...die, value: Math.ceil(Math.random() * 6) });
+}
+
+function getUserColor() {
+  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa'];
+  return colors[gameState.users.length];
 }
 
 app.get('/', (req, res) => {
@@ -32,6 +39,7 @@ io.on('connection', (socket) => {
       id: id,
       username: username,
       totalPoints: 0,
+      color: getUserColor(),
       scores: Array(11).fill(-1)
     };
   
@@ -42,9 +50,10 @@ io.on('connection', (socket) => {
 
   socket.on('startGame', () => {
     if (gameState.users.length >= 2) {
-      gameState.currentPlayerIndex = 0; // Ensure this is correctly set
-      gameState.rollCount = 0; // Reset roll count
-      io.emit('gameStarted', gameState); // Notify all clients that the game has started
+      gameState.currentPlayerIndex = 0; 
+      gameState.rollCount = 0; 
+      io.emit('gameStarted', gameState); 
+      io.emit('gameStateUpdate', gameState);
       console.log('Game started with players:', gameState.users.map(user => user.username));
     } else {
       socket.emit('error', 'Not enough players to start the game');
@@ -104,6 +113,21 @@ io.on('connection', (socket) => {
     gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.users.length;
     io.emit('gameStateUpdate', gameState);
   });
+
+  socket.on('sendMessage', (message) => {
+    const user = gameState.users.find(u => u.id === socket.id);
+    if(user) {
+      const chatMessage = {
+        userId: socket.id,
+        username: user.username,
+        message: message,
+        timestamp: new Date().toISOString()
+      };
+      gameState.messages.push(chatMessage);
+      io.emit('messageReceived', chatMessage);
+    }
+  });
+  
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);

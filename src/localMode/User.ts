@@ -1,21 +1,19 @@
 export default class User {
-  id: string;
   username: string;
   totalPoints: number;
   scores: { [key: string]: number };
 
-  constructor(id: string, username: string) {
-    this.id = id;
+  constructor(username: string) {
     this.username = username;
     this.totalPoints = 0;
     this.scores = {};
     for (let i = 0; i <= 10; i++) {
-      this.scores[i.toString()] = -1;
+      this.scores[i] = -1;
     }
   }
 
-  updateScore(lineId: number, points: number): void {
-    this.scores[lineId.toString()] = points;
+  updateScore(lineId: number, points: number):void {
+    this.scores[lineId] = points;
     this.totalPoints += points;
   }
 }
