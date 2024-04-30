@@ -11,7 +11,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
-        const newSocket = io('http://192.168.1.85:3001', {
+        // TODO: Change the URL to your server's URL
+        const newSocket = io('https://yazi-261b234dbfb9.herokuapp.com:3001', {
             transports: ['websocket'],
         });
         setSocket(newSocket);
