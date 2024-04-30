@@ -24,6 +24,8 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
   const [rollCount, setRollCount] = useState<number>(0);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
   const [currentPlayer, setCurrentPlayer] = useState<User | undefined>(users[0]);
+  const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const [winner, setWinner] = useState<any>(undefined);
   const socket = useSocket();
 
   useEffect(() => {
@@ -34,14 +36,14 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
       setUserId(storedId);
     }
 
-    function checkGameCompletion(users:any) {
-      return users.every((user:any) => user.scores.every((score:number) => score !== -1));
+    function checkGameCompletion(users: any) {
+      return users.every((user: any) => user.scores.every((score: number) => score !== -1));
     }
 
-    function determineWinner(users:any) {
-      return users.reduce((prev:any, current:any) => (prev.totalPoints > current.totalPoints) ? prev : current);
+    function determineWinner(users: any) {
+      return users.reduce((prev: any, current: any) => (prev.totalPoints > current.totalPoints) ? prev : current);
     }
-        
+
     socket?.on('gameStateUpdate', (gameState: any) => {
       setDice(gameState.dice);
       setRollCount(gameState.rollCount);
@@ -50,10 +52,13 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
 
       if (checkGameCompletion(gameState.users)) {
         const winner = determineWinner(gameState.users);
-        alert(`The winner is ${winner.username} with ${winner.totalPoints} points!`);
+        setWinner({
+          username: winner.username,
+          totalPoints: winner.totalPoints
+        });
         setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+          setGameEnded(true);
+        }, 2000);
       }
     });
 
@@ -197,7 +202,12 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full my-4">
-      <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
+      {
+        gameEnded ?
+        <h1 className='mb-4 text-white'>The winner is {winner.username} with {winner.totalPoints} points!</h1>
+        :
+        <h1 className='mb-4 text-white'>Playing: {currentPlayer?.username}</h1>
+      }
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
         <ScoreTable
           users={users}
@@ -220,13 +230,23 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
             </div>
           ))}
         </div>
-        <button
-          className="w-full p-2 mb-4 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700"
-          onClick={rollDice}
-          disabled={rollCount >= 3}
-        >
-          Roll Dice ({3 - rollCount})
-        </button>
+        {
+          !gameEnded ?
+            <button
+              className="w-full p-2 mb-4 text-white transition-all duration-200 bg-blue-500 rounded hover:bg-blue-700"
+              onClick={rollDice}
+              disabled={rollCount >= 3}
+            >
+              Roll Dice ({3 - rollCount})
+            </button>
+            :
+            <button
+              className="w-full p-2 mb-4 text-white transition-all duration-200 bg-yellow-500 rounded hover:bg-yellow-700"
+              onClick={() => window.location.reload()}
+            >
+              Go back to waiting room
+            </button>
+        }
       </div>
     </div>
   );

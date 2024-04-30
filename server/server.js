@@ -31,6 +31,7 @@ io.on('connection', (socket) => {
     const newUser = {
       id: id,
       username: username,
+      totalPoints: 0,
       scores: Array(11).fill(-1)
     };
   

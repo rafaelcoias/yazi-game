@@ -10,9 +10,12 @@ interface SocketProviderProps {
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
 
+    // const BACKEND_API = "https://yazi-261b234dbfb9.herokuapp.com/";
+    const BACKEND_API = "http://192.168.1.85:3001";
+
     useEffect(() => {
         // TODO: Change the URL to your server's URL
-        const newSocket = io('https://yazi-261b234dbfb9.herokuapp.com/', {
+        const newSocket = io(BACKEND_API, {
             transports: ['websocket'],
         });
         setSocket(newSocket);
