@@ -17,11 +17,12 @@ function BotGame() {
 
   return (
     <div className='flex justify-center w-full h-full min-h-screen p-2'>
-      {!gameStarted ? (
+      {/* {!gameStarted ? (
         <PlayerSetup onStartGame={(player:any) => startGame(player)} />
       ) : (
         <DiceGame users={users} setUsers={setUsers} />
-      )}
+      )} */}
+      In construction...
     </div>
   );
 }
