@@ -79,13 +79,13 @@ io.on('connection', (socket) => {
     io.emit('gameStateUpdate', gameState);
   });
 
-  socket.on('scoreUpdate', ({ userId, lineId, score }) => {
-    if (userId !== gameState.currentPlayerIndex) {
+  socket.on('scoreUpdate', ({ userIndex, lineId, score }) => {
+    if (userIndex !== gameState.currentPlayerIndex) {
       socket.emit('error', 'It\'s not your turn!');
       return;
     }
   
-    let user = gameState.users[userId];
+    let user = gameState.users[userIndex];
     if (!user) {
       socket.emit('error', 'User not found');
       return;

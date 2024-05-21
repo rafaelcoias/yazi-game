@@ -85,12 +85,13 @@ const ScoreTable: React.FC<ScoreTableProps> = ({ users, onScore, diceValues, cal
                                             key={userIndex}
                                             className='p-[6px] h-[8px]'
                                         >
-                                            <div
+                                            <button
                                                 className={`cursor-pointer w-full h-full flex items-center justify-center rounded-[5px] ${currentPlayerIndex === userIndex ? 'shadow-md shadow-gray-500' : ''} ${user?.scores[imageIndex] !== -1 ? 'bg-[#ffe9c0] shadow-none' : getPlayerColor(userIndex)}`}
                                                 onClick={() => onScore(userIndex, imageIndex, image.score)}
+                                                disabled={currentPlayerIndex !== userIndex}
                                             >
                                                 <p className='w-full text-center'>{user?.scores[imageIndex] !== -1 ? user?.scores[imageIndex] : (hasRolled && currentPlayerIndex === userIndex) ? calculateScore(imageIndex, diceValues) : ''}</p>
-                                            </div>
+                                            </button>
                                         </td>
                                     )
                                 })
