@@ -152,7 +152,7 @@ function DiceGame({ users, setUsers }: { users: User[], setUsers: any }) {
   };
 
   return (
-    <div className="w-[20rem] flex flex-col items-center justify-center">
+    <div className="game w-[20rem] flex flex-col items-center justify-center">
       {
         gameEnded ?
           <h1 className='mb-4 text-white'>The mogger is {winner.username} with {winner.totalPoints} points!</h1>

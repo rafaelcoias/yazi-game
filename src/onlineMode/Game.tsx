@@ -209,7 +209,7 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
 
 
   return (
-    <div className="flex flex-col items-center justify-center w-full my-4">
+    <div className="flex flex-col items-center justify-center w-full my-4 game">
       {
         gameEnded ?
           <h1 className='mb-4 text-white'>The mogger is {winner.username} with {winner.totalPoints} points!</h1>

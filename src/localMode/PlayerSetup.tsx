@@ -30,7 +30,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
     if (usernames.length < 10) {
       setUsernames([...usernames, ""]);
     } else {
-      alert('Maximum of 4 players allowed.');
+      alert('Maximum of 10 players allowed.');
     }
   };
 
@@ -44,7 +44,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col items-center justify-center gap-6">
-      <h1 className="text-xl font-bold">Enter Player Names</h1>
+      <h1 className="text-xl font-bold text-white">Enter Player Names</h1>
       <div>
         {usernames.map((username, index) => (
           <div key={index} className="flex items-center mb-2">

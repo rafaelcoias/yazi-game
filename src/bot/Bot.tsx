@@ -16,7 +16,7 @@ function BotGame() {
   };
 
   return (
-    <div className='flex justify-center w-full h-full min-h-screen p-2'>
+    <div className='flex items-center justify-center w-full h-full min-h-screen p-2 text-white'>
       {/* {!gameStarted ? (
         <PlayerSetup onStartGame={(player:any) => startGame(player)} />
       ) : (

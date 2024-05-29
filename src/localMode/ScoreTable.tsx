@@ -27,10 +27,31 @@ const scoringImages = [
 
 const ScoreTable: React.FC<ScoreTableProps> = ({ users, onScore, diceValues, calculateScore, currentPlayerIndex, hasRolled }) => {
 
-  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80'];
-
-    const getPlayerColor = (index: number):string => {
-        return colors[index];
+    const getPlayerColor = (index: number): string => {
+        switch (index) {
+            case 0:
+                return 'bg-[#60a5fa]';
+            case 1:
+                return 'bg-[#f87171]';
+            case 2:
+                return 'bg-[#facc15]';
+            case 3:
+                return 'bg-[#4ade80]';
+            case 4:
+                return 'bg-[#38ddf8]';
+            case 5:
+                return 'bg-[#fb923c]';
+            case 6:
+                return 'bg-[#34A399]';
+            case 7:
+                return 'bg-[#c084fc]';
+            case 8:
+                return 'bg-[#a3e635]';
+            case 9:
+                return 'bg-[#dcbf0a]';
+            default:
+                return '';
+        }
     };
 
     return (
@@ -39,7 +60,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({ users, onScore, diceValues, cal
                 <thead className="">
                     <tr>
                         <th className="text-left w-[5rem]"></th>
-                        {users.map((user:any, index) => (
+                        {users.map((user: any, index) => (
                             <th key={index} className="w-[5rem] text-[.6rem]">
                                 <p>{user?.username}</p>
                                 <p>{user?.totalPoints || 0}</p>
@@ -60,13 +81,13 @@ const ScoreTable: React.FC<ScoreTableProps> = ({ users, onScore, diceValues, cal
                             {users.map((user, userIndex) => (
                                 <td
                                     key={userIndex}
-                                    className='p-[6px] h-[8px]'
+                                    className='p-[6px] h-[8px] '
                                 >
                                     <div
-                                        className={`cursor-pointer w-full h-full flex items-center justify-center rounded-[5px] ${currentPlayerIndex === userIndex ? 'shadow-md shadow-gray-500' : ''} ${user.scores[imageIndex] !== -1 ? 'bg-[#ffe9c0] shadow-none' : getPlayerColor(userIndex)}`}
+                                        className={`cursor-pointer min-w-[2rem] w-full h-full flex items-center justify-center rounded-[5px] ${currentPlayerIndex === userIndex ? 'shadow-md shadow-gray-500' : ''} ${user.scores[imageIndex] !== -1 ? 'bg-[#ffe9c0] shadow-none' : getPlayerColor(userIndex)}`}
                                         onClick={() => onScore(userIndex, imageIndex, image.score)}
                                     >
-                                        <p className='w-full text-center'>{user.scores[imageIndex] !== -1 ? user.scores[imageIndex] : (currentPlayerIndex === userIndex && hasRolled)? calculateScore(imageIndex, diceValues) : ''}</p>
+                                        <p className='w-full text-center'>{user.scores[imageIndex] !== -1 ? user.scores[imageIndex] : (currentPlayerIndex === userIndex && hasRolled) ? calculateScore(imageIndex, diceValues) : ''}</p>
                                     </div>
                                 </td>
                             ))}

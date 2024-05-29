@@ -118,7 +118,7 @@ export default function OnlineGame() {
               <div className="max-h-[20rem] overflow-x-hidden overflow-y-auto min-h-[10rem]">
                 {messages.map((msg, index) => (
                   <div key={index} className="p-1 text-black bg-[#ddd] border-2 flex justify-between items-center gap-4">
-                    <p className=''>{msg.username} says: <span className='font-normal'>{msg.message}</span></p>
+                    <p className=''>{msg.username}: <span className='font-normal'>{msg.message}</span></p>
                     <p className='text-[.6rem]'>{formatTime(msg.timestamp)}</p>
                   </div>
                 ))}

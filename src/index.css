@@ -12,12 +12,18 @@
   src: url("./content/font/Garet-Bold.ttf");
 }
 
-body {
+
+body:not(:has(.game)) {
   margin: 0;
-  font-family: garetBold, sans-serif;
+  background-color: #76b34c;
+  background-image: url('./logo.jpg');
+  background-size: contain;
+  backdrop-filter: brightness(0.5) blur(4px);
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: garetBold, garetRegular, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #76b34c;
   display: flex;
   flex-direction: column;
   align-items: center;

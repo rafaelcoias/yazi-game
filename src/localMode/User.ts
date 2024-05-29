@@ -20,6 +20,6 @@ export default class User {
 }
 
 function getUserColor(id:number) {
-  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa'];
+  const colors = ["#60a5fa", "#f87171", "#facc15", "#4ade80", "#38bdf8", "#fb923c", "#34d399", "#c084fc", "#a3e635", "#fdba74"];
   return colors[id];
 }
