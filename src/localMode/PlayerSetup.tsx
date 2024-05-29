@@ -27,7 +27,7 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
   };
 
   const addUser = () => {
-    if (usernames.length < 6) {
+    if (usernames.length < 10) {
       setUsernames([...usernames, ""]);
     } else {
       alert('Maximum of 4 players allowed.');

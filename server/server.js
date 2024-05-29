@@ -20,7 +20,7 @@ function rollDice() {
 }
 
 function getUserColor() {
-  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa'];
+  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80'];
   return colors[gameState.users.length];
 }
 
