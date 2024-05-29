@@ -27,19 +27,10 @@ const scoringImages = [
 
 const ScoreTable: React.FC<ScoreTableProps> = ({ users, onScore, diceValues, calculateScore, currentPlayerIndex, hasRolled }) => {
 
+  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa', '#f87171', '#facc15', '#4ade80'];
+
     const getPlayerColor = (index: number):string => {
-        switch (index) {
-            case 0:
-                return 'bg-blue-400';
-            case 1:
-                return 'bg-red-400';
-            case 2:
-                return 'bg-yellow-400';
-            case 3:
-                return 'bg-green-400';
-            default:
-                return 'bg-[#f7d9a3]';
-        }
+        return colors[index];
     };
 
     return (
