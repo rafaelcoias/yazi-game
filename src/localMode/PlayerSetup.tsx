@@ -19,10 +19,10 @@ const PlayerSetup: React.FC<PlayerSetupProps> = ({ onStartGame }) => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const users = usernames.filter(name => name.trim() !== "").map((name, index) => new User(index, name.trim()));
-    if (users.length >= 2 && users.length <= 4) {
+    if (users.length >= 2 && users.length <= 10) {
       onStartGame(users);
     } else {
-      alert('Please enter between 2 and 4 players.');
+      alert('Please enter between 2 and 10 players.');
     }
   };
 
