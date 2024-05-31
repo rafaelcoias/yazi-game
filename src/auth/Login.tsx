@@ -7,28 +7,29 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 export default function Login() {
     const navigate = useNavigate();
     
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async user => {
             if (user)
-                navigate('/home');
+                navigate('/lobby');
         });
         return () => unsubscribe();
     }, [navigate]);
 
     const login = async () => {
-        if (email === '' || password === '') {
+        if (username === '' || password === '') {
             alert('Please fill in all the inputs.');
             return;
         }
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, `${username.toLowerCase()}@yazi.online`, password)
             .then(async () => {
-                navigate('/home');
+                navigate('/lobby');
             })
-            .catch(() => {
+            .catch((e) => {
+                alert('Invalid username and password');
+                console.error('Error logging in:', e);
                 return;
             });
     }
@@ -38,10 +39,10 @@ export default function Login() {
         <div className='flex flex-col items-center justify-center w-full min-h-screen text-white bg-darkgray'>
             <h2 className='text-[1.2rem] text-[var(--stats)] font-bold mb-8'>YAZI</h2>
             <div className='flex flex-col gap-6'>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className='input' placeholder='| Email' />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className='lowercase input' placeholder='| Username' />
                 <div className='relative'>
                     <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={'password'}
                         placeholder='| Password'
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

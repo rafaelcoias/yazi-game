@@ -1,7 +1,15 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
+const serviceAccount = require('./firebase.json');
+initializeApp({
+  credential: cert(serviceAccount)
+});
+
+const db = getFirestore();
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -20,7 +28,7 @@ function rollDice() {
 }
 
 function getUserColor() {
-  const colors = ["#60a5fa", "#f87171", "#facc15", "#4ade80", "#38bdf8", "#fb923c", "#34d399", "#c084fc", "#a3e635", "#fdba74"];
+  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa'];
   return colors[gameState.users.length];
 }
 
@@ -33,14 +41,18 @@ io.on('connection', (socket) => {
 
   socket.emit('gameStateUpdate', gameState);
 
-  socket.on('joinGame', (username, callback) => {
+  socket.on('joinGame', (user, callback) => {
     const id = socket.id;
     const newUser = {
       id: id,
-      username: username,
+      username: user?.username,
       totalPoints: 0,
       color: getUserColor(),
-      scores: Array(11).fill(-1)
+      scores: Array(11).fill(-1),
+      score: user?.score,
+      matchPlayed: user?.matchPlayed,
+      wonGames: user?.wonGames,
+      highScore: user?.highScore
     };
   
     gameState.users.push(newUser);
@@ -79,13 +91,13 @@ io.on('connection', (socket) => {
     io.emit('gameStateUpdate', gameState);
   });
 
-  socket.on('scoreUpdate', ({ userIndex, lineId, score }) => {
-    if (userIndex !== gameState.currentPlayerIndex) {
+  socket.on('scoreUpdate', ({ userId, lineId, score }) => {
+    if (userId !== gameState.currentPlayerIndex) {
       socket.emit('error', 'It\'s not your turn!');
       return;
     }
   
-    let user = gameState.users[userIndex];
+    let user = gameState.users[userId];
     if (!user) {
       socket.emit('error', 'User not found');
       return;
@@ -128,6 +140,56 @@ io.on('connection', (socket) => {
     }
   });
   
+  socket.on('endGame', (gameState) => {
+    updateUsersInFirebase(gameState.users);
+    // Reset game state
+    gameState.users = [];
+    gameState.dice = Array(5).fill({ value: 1, isHeld: false });
+    gameState.currentPlayerIndex = 0;
+    gameState.rollCount = 0;
+    gameState.messages = [];
+    // Notify all clients
+    io.emit('endGame');
+    io.emit('gameStateUpdate', gameState);
+  });
+  
+  function updateUsersInFirebase(users) {
+    users.forEach(user => {
+      const userRef = db.collection('users').doc(user.username);
+      userRef.get().then(doc => {
+        if (doc.exists) {
+          const userData = doc.data();
+          const newTotalPoints = userData.score + user.totalPoints;
+          const newMatchPlayed = userData.matchPlayed + 1;
+          const newWonGames = userData.wonGames + (isUserWinner(user) ? 1 : 0);
+          const newHighScore = Math.max(userData.highScore, user.totalPoints);
+
+          userRef.update({
+            score: newTotalPoints,
+            matchPlayed: newMatchPlayed,
+            wonGames: newWonGames,
+            highScore: newHighScore
+          }).then(() => {
+            console.log(`User ${user.username} updated successfully.`);
+          }).catch(error => {
+            console.error(`Error updating user ${user.username}: `, error);
+          });
+        } else {
+          console.log(`User ${user.username} does not exist.`);
+        }
+      }).catch(error => {
+        console.error('Error getting user document:', error);
+      });
+    });
+  }
+
+  function isUserWinner(user) {
+    return user.totalPoints === Math.max(...gameState.users.map(u => u.totalPoints));
+  }
+
+  function isGameFinished() {
+    return gameState.users.every(user => user.scores.every(score => score !== -1));
+  }
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);

@@ -8,6 +8,7 @@ async function UpdateData(collection, docId, data, message, functionToRun) {
             alert(message);
         functionToRun();
     } catch (err) {
+        alert("Error updating user");
         console.log(err);
     }
 }

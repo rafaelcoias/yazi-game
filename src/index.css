@@ -15,6 +15,7 @@
 
 body:not(:has(.game)) {
   margin: 0;
+  padding: 0;
   background-color: #76b34c;
   background-image: url('./logo.jpg');
   background-size: contain;
@@ -46,7 +47,7 @@ code {
   --gray: #8a8a8a;
   --lightgray: #e5e5e5;
   --purple: #44489a;
-  --primary: #44489a;
+  --primary: #76b34c;
   --blue: #5cabff;
   --green: #00bf63;
   --pink: #924adb;
@@ -56,5 +57,5 @@ code {
 }
 
 .input {
-  @apply w-full px-4 py-2 border-none bg-[var(--lightgray)] text-black rounded-[25px] outline-[var(--primary)]
+  @apply px-4 py-2 border-none bg-[var(--lightgray)] text-black rounded-[25px] outline-[var(--primary)]
 }

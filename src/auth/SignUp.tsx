@@ -8,23 +8,22 @@ import { create } from '../server';
 export default function SignUp() {
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
 
     const signup = async () => {
-        if (email === '' || password === '') {
+        if (username === '' || password === '') {
             alert('Please fill in all the inputs.');
             return;
         }
-        await createUserWithEmailAndPassword(auth, `${email}@yazi.online`, password)
+        await createUserWithEmailAndPassword(auth, `${username.toLowerCase()}@yazi.online`, password)
             .then(async () => {
-                await create('users', email, {email, points: 0, credit: 0, wonGames: 0, highScore: 0, matchPlayed: 0}, '', () => {
+                await create('users', username.toLowerCase(), {username: username.toLowerCase(), name: username.toLowerCase(), score: 0, credit: 0, wonGames: 0, highScore: 0, matchPlayed: 0}, '', () => {
                     navigate('/lobby');
                 });
             })
             .catch(() => {
-                alert('Invalid Email or Password.');
+                alert('Invalid Username or Password.');
                 return;
             });
     }
@@ -34,10 +33,10 @@ export default function SignUp() {
         <div className='flex flex-col items-center justify-center w-full min-h-screen text-white bg-darkgray'>
             <h2 className='text-[1.2rem] text-[var(--stats)] font-bold mb-8'>WELCOME TO MOG NATION</h2>
             <div className='flex flex-col gap-6'>
-                <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} className='input' placeholder='| Email' />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className='lowercase input' placeholder='| Username' />
                 <div className='relative'>
                     <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={'password'}
                         placeholder='| Password'
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
