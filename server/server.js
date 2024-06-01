@@ -1,15 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
 
-const serviceAccount = require('./firebase.json');
-initializeApp({
-  credential: cert(serviceAccount)
-});
-
-const db = getFirestore();
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
