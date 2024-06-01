@@ -20,7 +20,7 @@ function rollDice() {
 }
 
 function getUserColor() {
-  const colors = ["#60a5fa", "#f87171", "#facc15", "#4ade80", "#38bdf8", "#fb923c", "#34d399", "#c084fc", "#a3e635", "#fdba74"];
+  const colors = ['#60a5fa', '#f87171', '#facc15', '#4ade80', '#60a5fa'];
   return colors[gameState.users.length];
 }
 
@@ -33,14 +33,19 @@ io.on('connection', (socket) => {
 
   socket.emit('gameStateUpdate', gameState);
 
-  socket.on('joinGame', (username, callback) => {
+  socket.on('joinGame', (user, callback) => {
     const id = socket.id;
     const newUser = {
       id: id,
-      username: username,
+      username: user?.username,
+      name: user?.name,
       totalPoints: 0,
       color: getUserColor(),
-      scores: Array(11).fill(-1)
+      scores: Array(11).fill(-1),
+      score: user?.score,
+      matchPlayed: user?.matchPlayed,
+      wonGames: user?.wonGames,
+      highScore: user?.highScore
     };
   
     gameState.users.push(newUser);
@@ -79,13 +84,13 @@ io.on('connection', (socket) => {
     io.emit('gameStateUpdate', gameState);
   });
 
-  socket.on('scoreUpdate', ({ userIndex, lineId, score }) => {
-    if (userIndex !== gameState.currentPlayerIndex) {
+  socket.on('scoreUpdate', ({ userId, lineId, score }) => {
+    if (userId !== gameState.currentPlayerIndex) {
       socket.emit('error', 'It\'s not your turn!');
       return;
     }
   
-    let user = gameState.users[userIndex];
+    let user = gameState.users[userId];
     if (!user) {
       socket.emit('error', 'User not found');
       return;
@@ -128,7 +133,6 @@ io.on('connection', (socket) => {
     }
   });
   
-
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
     gameState.users = gameState.users.filter(user => user.id !== socket.id);

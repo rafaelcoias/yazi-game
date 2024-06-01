@@ -15,6 +15,7 @@
 
 body:not(:has(.game)) {
   margin: 0;
+  padding: 0;
   background-color: #76b34c;
   background-image: url('./logo.jpg');
   background-size: contain;
@@ -37,4 +38,24 @@ code {
 
 .font-normal {
   font-family: garetRegular, sans-serif;
+}
+
+:root {
+  --white: #fff;
+  --black: #000;
+  --darkgray: #252525;
+  --gray: #8a8a8a;
+  --lightgray: #e5e5e5;
+  --purple: #44489a;
+  --primary: #76b34c;
+  --blue: #5cabff;
+  --green: #00bf63;
+  --pink: #924adb;
+  --stats: #c1ff72;
+  --red: #ff5757;
+  --sprintBg: #252525;
+}
+
+.input {
+  @apply px-4 py-2 border-none bg-[var(--lightgray)] text-black rounded-[25px] outline-[var(--primary)]
 }
