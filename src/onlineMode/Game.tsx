@@ -41,7 +41,7 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
 
     function checkGameCompletion(users: any) {
       return users.every((user: any) =>
-        user.scores.some((score: number) => score !== -1)
+        user.scores.every((score: number) => score !== -1)
       );
     }
 
