@@ -44,7 +44,8 @@ export default function OnlineGame() {
     };
   }, [socket]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (e:any) => {
+    e.preventDefault();
     if (socket && chatMessage.trim()) {
       socket.emit('sendMessage', chatMessage.trim());
       setChatMessage('');
