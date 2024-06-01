@@ -56,6 +56,11 @@ export default function OnlineGame() {
   };
 
   const handleJoinGame = () => {
+    // check if player is already in the game
+    if (users.find((user: any) => user.id === userId)) {
+      alert('You are already in the game!');
+      return;
+    }
     if (socket) {
       socket.emit('joinGame', context?.user, (response: any) => {
         if (response && response.id) {

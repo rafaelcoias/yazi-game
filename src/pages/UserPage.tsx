@@ -66,12 +66,12 @@ export default function UserPage() {
 
   return (
     <div className="flex flex-col justify-center w-full min-h-screen gap-6 text-black">
-      <h1 className="text-[1.2rem] text-white text-center">My Stats</h1>
+      <h1 className="text-[1.2rem] text-white text-center capitalize">{username}' Stats</h1>
       <hr />
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
         <div className="overflow-x-hidden w-full p-4 bg-[#fdf8e3] rounded-[8px] flex flex-col gap-6">
           <ul className="flex flex-col w-full gap-4">
-            <li>Username: {context?.user?.username}</li>
+            <li>Username: {user?.username}</li>
             <li className="flex items-center w-full gap-4">
               <p>Name:</p>
               <input
@@ -83,10 +83,11 @@ export default function UserPage() {
                 className="bg-[transparent] w-full px-2 py-1 border-black border-2 rounded-md"
               />
             </li>
-            <li>Highest Score: {context?.user?.credit}</li>
-            <li>Total Score: {context?.user?.credit}</li>
-            <li>Total Games Won: {context?.user?.credit}</li>
-            <li>Total Games Played: {context?.user?.credit}</li>
+            <li>Highest Score: {user?.highScore}</li>
+            <li>Average Score: {Math.round((user?.score || 0) / (user?.matchPlayed || 1))}</li>
+            <li>Total Score: {user?.score}</li>
+            <li>Total Games Won: {user?.wonGames}</li>
+            <li>Total Games Played: {user?.matchPlayed}</li>
             <li className="flex items-center gap-4">
               <p>Social Credit:</p>
               <input
@@ -99,12 +100,15 @@ export default function UserPage() {
             </li>
           </ul>
           <div className="flex w-full gap-6">
-            <button
-              onClick={() => edit()}
-              className="w-full small-button bg-[var(--primary)] py-2 rounded-full"
-            >
-              <p className="w-full text-center text-white">Save</p>
-            </button>
+            {
+              context?.user?.username === username &&
+              <button
+                onClick={() => edit()}
+                className="w-full small-button bg-[var(--primary)] py-2 rounded-full"
+              >
+                <p className="w-full text-center text-white">Save</p>
+              </button>
+            }
             <button
               onClick={() => navigate(-1)}
               className="w-full small-button bg-[var(--blue)] py-2 rounded-full"

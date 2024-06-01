@@ -15,23 +15,49 @@ export default function Games() {
   const context = useContext(Context);
   const navigate = useNavigate();
 
-  function Game({ date, users }: { date: string; users: User[] }) {
+  function dateFormat(isoDate: string) {
+    // If it is not a valid date, return the date itself
+    if (isNaN(new Date(isoDate).getTime())) return "No date";
+    const date = new Date(isoDate);
+    return `${date.getDate().toString().padStart(2, "0")}/${(
+      date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}/${date.getFullYear()}, ${date
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  }
+
+  function Game({ game }: { game: any }) {
     return (
-      <div className="flex flex-col gap-4 border-2 p-8 border-[#414951] rounded-lg">
-        <p className="text-center text-[black]">{date}</p>
-        <div className="flex gap-4">
-          {users
-            .sort((a: User, b: User) => b?.score - a?.score)
-            .map((user: User, index: number) => {
-              const height = `${(users.length - index) * 1.5}rem  `;
-              return (
-                <div className="flex flex-col items-center justify-end gap-1">
-                  <div style={{height: height}} className={`w-4 bg-[${user?.color}]`}></div>
-                  <p className="w-full text-center border-t-2">{user?.score}</p>
-                  <p>{user?.name}</p>
-                </div>
-              );
-            })}
+      <div className="flex flex-col gap-2 border-2 p-4 border-[#414951] rounded-lg">
+        <p className="text-center text-[black]">{dateFormat(game?.date)}</p>
+        <p className="text-center text-[1rem]">
+          Total Points: {game?.totalPoints}
+        </p>
+        <div className="flex justify-center gap-4 mt-4">
+          {game?.players &&
+            game?.players
+              .sort((a: User, b: User) => b?.score - a?.score)
+              .map((user: User, index: number) => {
+                const height = `${user?.score}px`;
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center justify-end gap-1"
+                  >
+                    <div
+                      style={{ height: height }}
+                      className={`w-4 bg-[${user?.color}]`}
+                    ></div>
+                    <p className="w-full text-center border-t-2">
+                      {user?.score}
+                    </p>
+                    <p>{user?.username}</p>
+                  </div>
+                );
+              })}
         </div>
       </div>
     );
@@ -49,14 +75,6 @@ export default function Games() {
       <hr />
       <div className="bg-[#414951] rounded-[10px] p-4 flex flex-col gap-4 w-full">
         <div className="overflow-x-auto w-full p-4 bg-[#fdf8e3] rounded-[8px] flex flex-col gap-6">
-          {context?.games && context?.games.length !== 0 ? (
-            context?.games.map((ele: any, index: number) => {
-              return <Game date={ele?.date} users={ele?.players} />;
-            })
-          ) : (
-            <p className="w-full text-center">No result</p>
-          )}
-
           <div className="flex w-full gap-6">
             <button
               onClick={() => navigate("/lobby")}
@@ -65,6 +83,22 @@ export default function Games() {
               <p className="w-full text-center text-white">Go Back</p>
             </button>
           </div>
+          {context?.games && context?.games.length !== 0 ? (
+            context?.games
+              .sort(
+                (a: any, b: any) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              )
+              .map((ele: any, index: number) => {
+                return (
+                  <div key={index}>
+                    <Game game={ele} />
+                  </div>
+                );
+              })
+          ) : (
+            <p className="w-full text-center">No result</p>
+          )}
         </div>
       </div>
     </div>

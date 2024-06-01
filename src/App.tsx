@@ -29,7 +29,7 @@ function App() {
         }
         context?.setUser({
           ...userInfo,
-          id: userInfo.id,
+          id: userInfo.email,
         });
         setIsLoading(false);
       } else {

@@ -43,12 +43,12 @@ function App() {
             >
               Local
             </button>
-            <button
+            {/* <button
               onClick={() => setMode("bot")}
               className="w-20 h-10 text-white bg-red-500 rounded"
             >
               Bot
-            </button>
+            </button> */}
             <button
               onClick={() => setMode("online")}
               className="w-20 h-10 text-white bg-blue-500 rounded"

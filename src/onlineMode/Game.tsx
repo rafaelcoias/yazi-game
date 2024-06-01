@@ -22,7 +22,6 @@ interface Props {
 
 const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
   const context = useContext(Context);
-  const [gameState, setGameState] = useState<any>();
   const [dice, setDice] = useState<Dice[]>(initialDice);
   const [rollCount, setRollCount] = useState<number>(0);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
@@ -53,7 +52,6 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
     }
 
     socket?.on("gameStateUpdate", (gameState) => {
-      setGameState(gameState);
       setDice(gameState.dice);
       setRollCount(gameState.rollCount);
       setCurrentPlayerIndex(gameState.currentPlayerIndex);
@@ -63,13 +61,60 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
       document.body.style.backgroundColor =
         gameState.users[gameState.currentPlayerIndex].color;
 
-      if (checkGameCompletion(gameState.users)) {
+      if (checkGameCompletion(gameState.users) && !gameEnded) {
         document.body.style.backgroundColor = "";
         const winner = determineWinner(gameState.users);
         setWinner({
           username: winner.username,
           totalPoints: winner.totalPoints,
         });
+        if (winner.username === context?.user?.username) {
+          gameState?.users.forEach((user: any) => {
+            const newTotalPoints = user.score + user.totalPoints;
+            const newMatchPlayed = user.matchPlayed + 1;
+            const newWonGames =
+              user.wonGames +
+              (winner.username === user?.username ? 1 : 0);
+            const newHighScore = Math.max(user.highScore, user.totalPoints);
+            updateData(
+              "users",
+              user?.username,
+              {
+                score: newTotalPoints,
+                matchPlayed: newMatchPlayed,
+                wonGames: newWonGames,
+                highScore: newHighScore,
+              },
+              "",
+              () => {
+                console.log("User updated");
+              }
+            );
+          });
+          const now = new Date().toISOString();
+          create(
+            "games",
+            now,
+            {
+              date: now,
+              // get total points of all users
+              totalPoints: gameState.users.reduce(
+                (acc: number, user: any) => acc + user.totalPoints,
+                0
+              ),
+              winner: winner.username,
+              players: gameState.users.map((user: any) => ({
+                username: user.username,
+                score: user.totalPoints,
+                color: user.color,
+              })),
+            },
+            "",
+            () => {
+              console.log("Game record created");
+            }
+          );
+        }
         setGameEnded(true);
       }
     });
@@ -172,49 +217,6 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
       default:
         return 0;
     }
-  };
-
-  const endGameAndUpdate = () => {
-    // if (winner.username === context?.user?.username) {
-    //   gameState?.users.forEach((user: any) => {
-    //     const newTotalPoints = user.score + user.totalPoints;
-    //     const newMatchPlayed = user.matchPlayed + 1;
-    //     const newWonGames = user.wonGames + (winner.username === context?.user?.username ? 1 : 0);
-    //     const newHighScore = Math.max(user.highScore, user.totalPoints);
-    //     updateData(
-    //       "users",
-    //       user?.username,
-    //       {
-    //         score: newTotalPoints,
-    //         matchPlayed: newMatchPlayed,
-    //         wonGames: newWonGames,
-    //         highScore: newHighScore,
-    //       },
-    //       "",
-    //       () => {
-    //         console.log("User updated");
-    //       }
-    //     );
-    //     const now = new Date().toISOString();
-    //     create(
-    //       "games",
-    //       now,
-    //       {
-    //         date: now,
-    //         players: gameState.users.map((user: any) => ({
-    //           username: user.username,
-    //           score: user.totalPoints,
-    //           color: user.color,
-    //         })),
-    //       },
-    //       "",
-    //       () => {
-    //         console.log("Game record created");
-    //       }
-    //     );
-    //   });
-    // }
-    socket?.emit("endGame");
   };
 
   const sumDice = (diceValues: number[]): number => {
@@ -337,7 +339,7 @@ const DiceGame: React.FC<Props> = ({ users, setUsers, userId, setUserId }) => {
         ) : (
           <button
             className="w-full p-2 mb-4 text-white transition-all duration-200 bg-yellow-500 rounded hover:bg-yellow-700"
-            onClick={async () => {await endGameAndUpdate(); window.location.reload()}}
+            onClick={async () => window.location.reload()}
           >
             Go back to waiting room
           </button>

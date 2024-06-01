@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
     const newUser = {
       id: id,
       username: user?.username,
+      name: user?.name,
       totalPoints: 0,
       color: getUserColor(),
       scores: Array(11).fill(-1),
@@ -140,57 +141,6 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('endGame', (gameState) => {
-    updateUsersInFirebase(gameState.users);
-    // Reset game state
-    gameState.users = [];
-    gameState.dice = Array(5).fill({ value: 1, isHeld: false });
-    gameState.currentPlayerIndex = 0;
-    gameState.rollCount = 0;
-    gameState.messages = [];
-    // Notify all clients
-    io.emit('endGame');
-    io.emit('gameStateUpdate', gameState);
-  });
-  
-  function updateUsersInFirebase(users) {
-    users.forEach(user => {
-      const userRef = db.collection('users').doc(user.username);
-      userRef.get().then(doc => {
-        if (doc.exists) {
-          const userData = doc.data();
-          const newTotalPoints = userData.score + user.totalPoints;
-          const newMatchPlayed = userData.matchPlayed + 1;
-          const newWonGames = userData.wonGames + (isUserWinner(user) ? 1 : 0);
-          const newHighScore = Math.max(userData.highScore, user.totalPoints);
-
-          userRef.update({
-            score: newTotalPoints,
-            matchPlayed: newMatchPlayed,
-            wonGames: newWonGames,
-            highScore: newHighScore
-          }).then(() => {
-            console.log(`User ${user.username} updated successfully.`);
-          }).catch(error => {
-            console.error(`Error updating user ${user.username}: `, error);
-          });
-        } else {
-          console.log(`User ${user.username} does not exist.`);
-        }
-      }).catch(error => {
-        console.error('Error getting user document:', error);
-      });
-    });
-  }
-
-  function isUserWinner(user) {
-    return user.totalPoints === Math.max(...gameState.users.map(u => u.totalPoints));
-  }
-
-  function isGameFinished() {
-    return gameState.users.every(user => user.scores.every(score => score !== -1));
-  }
-
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
     gameState.users = gameState.users.filter(user => user.id !== socket.id);
