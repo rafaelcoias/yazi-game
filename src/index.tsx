@@ -14,6 +14,7 @@ root.render(
     <SocketProvider>
       <ContextProvider>
         <App />
+        <div className="absolute top-0 left-0 bg-[rgba(0,0,0,.3)] w-full h-full backdrop-blur-sm"></div>
       </ContextProvider>
     </SocketProvider>
   </React.StrictMode>

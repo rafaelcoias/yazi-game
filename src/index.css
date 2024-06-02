@@ -19,7 +19,7 @@ body:not(:has(.game)) {
   background-color: #76b34c;
   background-image: url('./logo.jpg');
   background-size: contain;
-  backdrop-filter: brightness(0.5) blur(4px);
+  backdrop-filter: brightness(0.7) blur(4px);
   background-repeat: no-repeat;
   background-position: center;
   font-family: garetBold, garetRegular, sans-serif;
@@ -29,11 +29,6 @@ body:not(:has(.game)) {
   flex-direction: column;
   align-items: center;
   transition: all 700ms ease;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
 }
 
 .font-normal {
